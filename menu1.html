@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
+	<title>Presupuesto</title>
+</head>
+<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="js/bootstrap/bootstrap.js"></script>
+<script type="text/javascript" src="js/sweetalert2.all.min.js"></script>
+<script type="text/javascript" src="js/presupuesto.js"></script>
+
+	<body>
+		<div class="container">
+			<div id="principal" class="text-center">
+				<div class="row">
+					<div class="col-md-12 mt-3 text-center">
+						<h1>Presupuesto de</h1>
+						<h1 id="mesEjercicio"></h1>
+						<h1 class="mt-3" id="saldo">$ 0.0</h1>
+						<div class="box-ingreso">
+							<div class="col-4">INGRESOS</div>
+							<div id="tIngresos" class="col-8 text-right">+$ 0.00</div>
+						</div>
+						<br>
+						<div class="box-egreso">
+							<div class="col-4">EGRESOS</div>
+							<div id="tEgresos" class="col-8 text-right">-$ 0.00</div>					
+						</div>
+						<h4 class="mt-2">Porcentaje de gastos: <span id="porcentajeGastos" class="badge badge-dark">0%</span></h4>
+				</div>
+				<div class="justify-content-center align-items-center container mt-2">
+					<div class="row">
+						<div class="col-md-6 border border-dark boxStyle">
+							<h3>Transacción</h3>
+							<div class="form-group w-75 justify-content-center align-items-center container">
+								<select id="transacion" class="form-control form-control-lg text-center selectStyle">
+									<option value="">Ingreso | Egreso</option>
+									<option value="0">Ingreso</option>
+									<option value="1">Egreso</option>
+								</select>
+								<br>
+								<input type="text" class="form-control form-control-lg" name="descripcion" id="descripcion" placeholder="Ingrese descripción">
+								<br>
+								<input type="number" class="form-control form-control-lg" name="monto" id="monto" placeholder="Ingrese monto de transacción">
+								<br>								
+								<button type="button" class="btn btn-lg btn-secondary border border-dark" id="agregarTransaccion">Agregar</button>								
+							</div>							
+						</div>
+						<div class="col-md-6 border border-dark boxStyle">
+							<h3>Detalles de Operaciones</h3>
+				                <!-- Tabs on Plain Card -->
+				                <div class="card card-nav-tabs card-plain">
+				                    <div class="card-header card-header-danger">
+				                        <!-- colors: "header-primary", "header-info", "header-success", "header-warning", "header-danger" -->
+				                        <div class="nav-tabs-navigation">
+				                            <div class="nav-tabs-wrapper">
+				                                <ul class="nav nav-tabs" data-tabs="tabs">
+				                                    <li class="nav-item">
+				                                        <a class="nav-link active" href="#ingresos" data-toggle="tab">Ingresos</a>
+				                                    </li>
+				                                    <li class="nav-item">
+				                                        <a class="nav-link" href="#egresos" data-toggle="tab">Egresos</a>
+				                                    </li>
+				                                </ul>
+				                            </div>
+				                        </div>
+				                    </div>
+				                    <div class="card-body ">
+				                        <div class="tab-content text-center">
+				                            <div class="tab-pane active" id="ingresos">
+				                            	<div class="row border border-dark detIngreso mt-1"></div>
+				                            	<!-- Carga dinamica de transacciones -->
+				                            </div>
+				                            <div class="tab-pane" id="egresos">
+				                            	<div class="row border border-dark detEgreso mt-1"></div>
+				                            	<!-- Carga dinamica de transacciones -->
+				                            </div>
+				                        </div>
+				                    </div>
+				                </div>				      
+						</div>	
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<footer>
+		<div class="row p-1">
+			<div class="col text-right">
+				<button type="reset" class="btn btn-danger" id="salir">Salir</button>
+			</div>
+		</div>
+		<div class="text-center bline mt-1">
+			<p id="date"></p>
+		</div>
+	</footer>
+</html>
+
+<!-- Script para validar exitencia de localStorage y direccionar a pagina login -->
+<script type="text/javascript">
+$( document ).ready(function() {
+
+	//Verificar si pin existe
+	let usuario = localStorage.getItem('pinUsuario');
+	if(usuario == null){
+		window.location.href = 'index.html';
+	};
+
+
+	//Fecha de hoy
+	n =  new Date();
+	y = n.getFullYear();
+	m = n.getMonth() + 1;
+	d = n.getDate();
+	h = n.getHours();
+	mn = n.getMinutes();
+	s = n.getSeconds();
+
+	var todayDate =  m + "/" + d + "/" + y;
+	var nowTime = h + ":" + mn + ":" + s;
+
+	document.getElementById("date").innerHTML = "Todos los derechos reservados. " + todayDate;
+	document.getElementById("mesEjercicio").textContent = capitalizeFirstLetter(obtenerNombreMes(m)) + " " + y;	
+
+
+	//Cerrar sesion
+	document.getElementById('salir').onclick = function(e){
+		localStorage.removeItem('pinUsuario');
+		window.location.href = 'index.html',true;
+		return false;
+	};
+
+
+	//Declarar variables a ser utilizadas globalmente
+	var saldoAcumulado = 0;
+	var tIngresos = 0;
+	var tEgresos = 0;
+	var porcentajeGastos = 0;	
+
+
+	//Validar y aplicar transaccion
+	document.getElementById('agregarTransaccion').onclick = function(e){
+
+		let tranTipo = document.getElementById('transacion').value;
+		let tranDesc = document.getElementById('descripcion').value;
+		let tranValor = document.getElementById('monto').value;
+
+		//Validar que todos los campos vengan con datos
+		if(tranTipo.length == 0 || tranDesc.length == 0 || tranValor.length == 0){
+			Swal.fire({
+			  icon: 'error',
+			  title: 'Datos Incompletos',
+			  text: 'Debe llenar todos los campos'
+			})			
+		}else if(tranTipo == 0){	//Transaccion tipo Ingreso
+				//Actualizamos variables
+				saldoAcumulado = saldoAcumulado + parseFloat(tranValor);
+				tIngresos = tIngresos + parseFloat(tranValor);
+				porcentajeGastos = (tEgresos * 100/tIngresos);
+				//Actualizamos leyenda en campos
+				document.getElementById('saldo').textContent = '$ '+ saldoAcumulado.toFixed(2);
+				document.getElementById('tIngresos').textContent = '+$ '+ tIngresos.toFixed(2);
+				document.getElementById('porcentajeGastos').textContent = '+$ '+ porcentajeGastos.toFixed(0);
+				// Agregamos transaccion a detalles
+				agregarIngreso(tranDesc,tranValor);
+				//Mostras mensaje de confirmacion
+				Swal.fire({
+				  icon: 'success',
+				  title: 'Saldo actualizado',
+				  text: 'Su nuevo saldo es $ '+ saldoAcumulado
+				})
+
+		}else if(tranTipo == 1){	//Transaccion tipo Engreso
+				//Validamos que saldo disponible sea mayor a egreso 
+				if(saldoAcumulado < tranValor){
+					Swal.fire({
+					  icon: 'error',
+					  title: 'Saldo insuficiente!',
+					  text: 'Su saldo actual es de $' - saldoAcumulado.toFixed(2)
+					})			
+				}else{
+					//Actualizamos variables
+					saldoAcumulado = parseFloat(saldoAcumulado) - parseFloat(tranValor);
+					tEgresos = tEgresos + parseFloat(tranValor);
+					porcentajeGastos = (tEgresos * 100/tIngresos);
+					//Actualizamos leyenda en campos
+					document.getElementById('saldo').textContent = '$ '+ saldoAcumulado.toFixed(2);
+					document.getElementById('tEgresos').textContent = '+$ '+ tEgresos.toFixed(2);
+					document.getElementById('porcentajeGastos').textContent = '+$ '+ porcentajeGastos.toFixed(0);
+					// Agregamos transaccion a detalles
+					agregarEgreso(tranDesc,tranValor,tIngresos);
+					//Mostras mensaje de confirmacion					
+					Swal.fire({
+					  icon: 'success',
+					  title: 'Pago efectuado',
+					  text: 'Su nuevo saldo es $ ' + saldoAcumulado
+					})	
+				}
+		}
+	};	
+
+
+	// Funcion para agregar un detalle de ingreso al tab de Ingresos
+	function agregarIngreso(desc,valor){
+
+		var detDesc = document.createElement('div');
+		detDesc.setAttribute('class','col-sm-6 text-left');
+		detDesc.innerHTML  = desc;
+		document.getElementsByClassName('detIngreso')[0].appendChild(detDesc);
+
+		var detValor = document.createElement('div');
+		detValor.setAttribute('class','col-sm-6 text-right');
+		detValor.innerHTML  = '$ '+ parseFloat(valor).toFixed(2);
+		document.getElementsByClassName('detIngreso')[0].appendChild(detValor);		
+		
+		//Limpiar campos
+		$('#transacion').val('');
+		$('#descripcion').val('');
+		$('#monto').val('');
+	}
+
+
+	// Funcion para agregar un detalle de egreso al tab de Egresos
+	function agregarEgreso(desc,valor,tIngresos){
+
+		var detDesc = document.createElement('div');
+		detDesc.setAttribute('class','col-sm-6 text-left');
+		detDesc.innerHTML  = desc;
+		document.getElementsByClassName('detEgreso')[0].appendChild(detDesc);
+
+		var detValor = document.createElement('div');
+		detValor.setAttribute('class','col-sm-6 text-right');
+		detValor.innerHTML  = '$ '+ parseFloat(valor).toFixed(2) + ' ' + '<span class="badge badge-dark">' + ((parseFloat(valor) *100)/tIngresos).toFixed(0) + '%</span>';
+		document.getElementsByClassName('detEgreso')[0].appendChild(detValor);
+
+		//Limpiar campos
+		$('#transacion').val('');
+		$('#descripcion').val('');
+		$('#monto').val('');
+	}
+
+
+});	
+</script>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
+	<title>Presupuesto</title>
+</head>
+<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="js/bootstrap/bootstrap.js"></script>
+<script type="text/javascript" src="js/sweetalert2.all.min.js"></script>
+<script type="text/javascript" src="js/presupuesto.js"></script>
+
+	<body>
+	    <div id="login">
+	        <div class="container">
+		        <div id="login-row" class="row justify-content-center align-items-center">
+	                <div id="login-column" class="col-md-6">
+	                    	<h1 class="text-center mt-5">Presupuesto Personal</h1>
+	                    <div id="login-box" class="col-md-12">
+	                        <form id="login-form" class="form" action="" method="post">
+	                            <div class="form-group">
+	                                <label for="username" class="text-info">Usuario:</label><br>
+	                                <input type="text" name="usuario" id="usuario" class="form-control">
+	                            </div>
+	                            <div class="form-group">
+	                                <label for="password" class="text-info">Pin:</label><br>
+	                                <input type="password" name="pin" id="pin" class="form-control">
+	                            </div>
+	                            <div class="form-group text-center">
+	                            	<button type="reset" id="btnLogin" class="btn btn-success">Ingresar</button>
+	                            </div>
+	                        </form>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</body>
+
+	<footer>
+		<div class="text-center bline mt-1">
+			<p id="date"></p>
+		</div>
+	</footer>
+</html>
+
+<script type="text/javascript">
+	// Validar Pin
+	document.getElementById('btnLogin').onclick = function(e){
+
+		let user = document.getElementById('usuario').value;
+		let pwd = document.getElementById('pin').value;
+
+		if(user == 'eduardo' && pwd == '1234'){
+			localStorage.setItem('pinUsuario','1234');
+			window.location.href = 'menu1.html',true;
+		}else{
+			document.getElementById('usuario').focus();
+			Swal.fire({
+			  icon: 'error',
+			  title: 'Oops...',
+			  text: 'Pin incorrecto!',
+			  footer: '<a href="index.html">Intente de nuevo</a>'
+			});
+		}
+	};
+</script>
